@@ -1,0 +1,73 @@
+using System;
+using System.Collections.Generic;
+
+// 1) Arayüz: Her ödeme türü bu kurallara uymalı
+public interface IOdeme
+{
+    string Ad { get; }           // Ödeme adını verir (örn: "Kredi Kartı")
+    bool Ode(decimal tutar);     // Ödemeyi yapar; başarılıysa true döner
+}
+
+// 2) Kredi kartı ile ödeme
+public class KrediKartiOdeme : IOdeme
+{
+    public string Ad => "Kredi Kartı";
+
+    public bool Ode(decimal tutar)
+    {
+        // Burada normalde banka entegrasyonu olur
+        Console.WriteLine($"{tutar:C} tutarında {Ad} ile ödeme alındı.");
+        return true;
+    }
+}
+
+// 3) Havale/EFT ile ödeme
+public class HavaleOdeme : IOdeme
+{
+    public string Ad => "Havale/EFT";
+
+    public bool Ode(decimal tutar)
+    {
+        // Burada IBAN kontrolü, dekont vb. süreçler olur
+        Console.WriteLine($"{tutar:C} tutarında {Ad} ile ödeme talimatı oluşturuldu.");
+        return true;
+    }
+}
+
+// 4) Arayüzü kullanarak türden bağımsız çalışma
+public class SatisIslemi
+{
+    private readonly IOdeme _odemeYontemi; // Bağımlılığı arayüzden alıyoruz
+
+    public SatisIslemi(IOdeme odemeYontemi)
+    {
+        _odemeYontemi = odemeYontemi;
+    }
+
+    public void SatinAl(decimal tutar)
+    {
+        Console.WriteLine("Satın alma başlıyor...");
+        bool basarili = _odemeYontemi.Ode(tutar);
+
+        Console.WriteLine(basarili
+            ? "Ödeme başarılı, sipariş oluşturuldu."
+            : "Ödeme başarısız, lütfen tekrar deneyin.");
+    }
+}
+
+public class Program
+{
+    public static void Main()
+    {
+        // Aynı satış akışı, farklı ödeme yöntemleriyle çalışabiliyor
+        var sepetTutari = 499.90m;
+
+        SatisIslemi kartlaSatis = new SatisIslemi(new KrediKartiOdeme());
+        kartlaSatis.SatinAl(sepetTutari);
+
+        Console.WriteLine();
+
+        SatisIslemi havaleIleSatis = new SatisIslemi(new HavaleOdeme());
+        havaleIleSatis.SatinAl(sepetTutari);
+    }
+}

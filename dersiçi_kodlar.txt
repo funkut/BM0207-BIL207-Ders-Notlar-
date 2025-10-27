@@ -1,0 +1,193 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+
+namespace StringExample
+{
+    class Program
+    {
+// ilk harf hariç metindeki kelimeleri yıldızlama
+        static void Main(string[] args)
+        {
+            string isim = "Ömer Faruk Karaman";
+            string[] isimParcalari = isim.Split(' ');
+            for(int i = 0; i<isimParcalari.Length; i++)
+            {
+                string ad = isimParcalari[i];
+                isimParcalari[i] = ad[0] + new string('*', ad.Length - 1);
+            }
+            string sonuc = string.Join(" ", isimParcalari);
+            Console.WriteLine(sonuc);
+
+
+
+            string ad11 = "talha";
+            string soyadd = "şahin";
+            int ad_boyut = ad11.Length;
+            int soyad_boyut = soyadd.Length;
+
+
+            string ad1=ad11.ToUpper();
+            string soyad= soyadd.ToUpper();
+
+            for (int i = 1; i < ad_boyut; i++)
+            {
+                ad1 = ad1.Replace(ad1[i], '*');
+            }
+            for (int i = 1; i < soyad_boyut; i++)
+            {
+                soyad = soyad.Replace(soyad[i], '*');
+            }
+
+
+            Console.WriteLine(ad1);
+            Console.WriteLine(soyad);
+        
+        }
+    }
+}
+
+
+// metnin kısaltmasını bulan program
+
+  static void Main(string[] args)
+        {
+            string input = "türk Dil kurumu";
+            string acronym = ConvertToAcronym(input);
+            Console.WriteLine(acronym);
+        }
+        static string ConvertToAcronym(string text)
+        {
+            string[] words = text.Split(' ');
+            string acronym = "";
+
+            foreach (string word in words)
+            {
+                acronym += word[0];
+            }
+
+            return acronym.ToUpper();
+        }
+
+
+
+
+
+// eşitlik, alt string, içerme
+
+        static void Main(string[] args)
+        {
+            
+            string name1 = "Ahmet";
+            string name2 = "Ahmet Can";
+
+      
+            if(String.Compare(name1, name2) == -1)
+                Console.WriteLine(name1 + "," + name2 + "'den farklıdır");
+            else 
+                Console.WriteLine(name1 + "," + name2 + "'e eşittir");
+
+           
+            if(name1.CompareTo(name2)==-1)
+                Console.WriteLine(name1 + "," + name2 + "'den farklıdır");
+            else
+                Console.WriteLine(name1 + "," + name2 + "'e eşittir");
+
+            Console.WriteLine(name2.Contains(name1));
+
+            Console.WriteLine(name2.Substring(6));
+
+
+
+
+        }
+
+//palindrome
+static void Main(string[] args)
+        {
+
+            string kelime = Console.ReadLine();
+            char[] strarray = kelime.ToCharArray();
+            Array.Reverse(strarray);
+
+            string reversed = new string(strarray);
+
+            if (kelime.Equals(reversed))
+            {
+                Console.WriteLine("Bu kelime palindrom bir kelimedir.");
+            }
+
+            else
+            {
+                Console.WriteLine("Bu kelime palindrom bir kelime değildir.");
+            }
+
+
+
+
+        }
+
+// metin içndeki palindromları ve sayılarını bulma
+ class Program
+    {
+        static void Main(string[] args)
+        {
+            int pal = 0;
+            string kelime2 = "Küçük yatay yatak ala ile anne ana baba kütük";
+
+            string[] kelimeler = (kelime2.ToLower()).Split(' ');
+            Console.WriteLine(kelimeler.Length + " tane kelime var");
+            
+            foreach (var kelime in kelimeler)
+            {
+                char[] strarray = kelime.ToCharArray();
+                Array.Reverse(strarray);
+                string reversed = new string(strarray);
+
+                if (kelime.Equals(reversed))
+                {
+                    pal++;
+                    Console.WriteLine(kelime);
+                }
+
+
+ 
+            }
+
+            Console.WriteLine(pal + " tane palindrom kelime var");
+        }
+
+    }
+
+
+// metin içindeki baglacları bulma
+
+        static void Main(string[] args)
+        {
+
+            string metin = "Bugün hava güzel ama biraz serin. Kahvaltıdan sonra dışarı çıkmak istiyorum, çünkü güneşin tadını çıkarmak harika olacak. Arkadaşlarım da gelirse, birlikte piknik yapabiliriz. Eğer yağmur yağmazsa, parka gideceğiz. Hem oyun oynarız hem de sohbet ederiz. Sonra da dondurma yemeyi planlıyoruz. Her ne kadar hava serin olsa da, keyifli bir gün geçireceğimize inanıyorum.";
+
+            char[] ayiricilar = {' ', ',', '.', ';', '!' };
+            string[] kelimeler = metin.Split(ayiricilar);
+
+            string[] baglaclar = { "ve", "ama", "ile","de","da","ki","ya da","veya","yalnızca"};
+
+            int baglac_sayisi=0;
+
+            foreach(var kelime in kelimeler)
+            {
+                if (Array.Exists(baglaclar, b => b == kelime.ToLower()))
+                {
+                    Console.WriteLine(kelime);
+                    baglac_sayisi++;
+                }
+            }
+            Console.WriteLine("Toplam Bağlaç Sayısı: " + baglac_sayisi);
+
+            Console.ReadKey();
+                
+        }
+

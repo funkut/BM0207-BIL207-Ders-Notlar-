@@ -1,0 +1,67 @@
+using System;
+
+// 1) Arayüz: Her bildirim türü bu kurallara uyar
+public interface IBildirim
+{
+    string Ad { get; }                 // Örn: "E-Posta" veya "SMS"
+    bool Gonder(string kime, string mesaj);
+}
+
+// 2) E-posta bildirimi
+public class EPostaBildirim : IBildirim
+{
+    public string Ad => "E-Posta";
+
+    public bool Gonder(string kime, string mesaj)
+    {
+        // Normalde SMTP/servis çağrısı yapılır
+        Console.WriteLine($"{Ad} -> {kime}: {mesaj}");
+        return true;
+    }
+}
+
+// 3) SMS bildirimi
+public class SmsBildirim : IBildirim
+{
+    public string Ad => "SMS";
+
+    public bool Gonder(string kime, string mesaj)
+    {
+        // Normalde SMS sağlayıcı API çağrısı yapılır
+        Console.WriteLine($"{Ad} -> {kime}: {mesaj}");
+        return true;
+    }
+}
+
+// 4) Arayüzden bağımsız çalışan iş sınıfı
+public class BildirimServisi
+{
+    private readonly IBildirim _bildirim;
+
+    public BildirimServisi(IBildirim bildirim) => _bildirim = bildirim;
+
+    public void UyariGonder(string kullanici, string icerik)
+    {
+        Console.WriteLine("Uyarı hazırlanıyor...");
+        bool ok = _bildirim.Gonder(kullanici, icerik);
+
+        Console.WriteLine(ok
+            ? $"Uyarı {_bildirim.Ad} ile başarıyla gönderildi."
+            : "Uyarı gönderilemedi.");
+    }
+}
+
+public class Program
+{
+    public static void Main()
+    {
+        // Aynı servis, farklı bildirim türleriyle çalışıyor
+        var epostaServisi = new BildirimServisi(new EPostaBildirim());
+        epostaServisi.UyariGonder("ali@example.com", "Hesabınızda oturum açıldı.");
+
+        Console.WriteLine();
+
+        var smsServisi = new BildirimServisi(new SmsBildirim());
+        smsServisi.UyariGonder("+90555XXXXXXX", "Doğrulama kodunuz: 482913");
+    }
+}

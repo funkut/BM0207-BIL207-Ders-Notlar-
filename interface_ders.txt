@@ -1,0 +1,115 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+interface IOdeme
+{
+    string Ad { get; }
+    void BilgiAl();
+    void Ode(decimal tutar);
+}
+
+class KrediKarti : IOdeme
+{
+    public string Ad => "Kredi Kartı";
+    string isim = "", kartNo = "", skt = "", cvv = "";
+
+    public void BilgiAl()
+    {
+        Console.Write("Kart Sahibi: "); isim = Console.ReadLine()?.Trim() ?? "";
+
+        // Kart numarası doğrulama
+        while (true)
+        {
+            Console.Write("Kart No (16 haneli rakam): ");
+            kartNo = Console.ReadLine()?.Replace(" ", "") ?? "";
+            if (kartNo.Length == 16 && kartNo.All(char.IsDigit))
+                break;
+            Console.WriteLine("Geçersiz Kredi Kartı! Lütfen sadece 16 haneli rakam girin.");
+        }
+
+        Console.Write("SKT (AA/YY): "); skt = Console.ReadLine()?.Trim() ?? "";
+
+        // CVV doğrulama
+        while (true)
+        {
+            Console.Write("CVV (3 haneli rakam): ");
+            cvv = Console.ReadLine()?.Trim() ?? "";
+            if (cvv.Length == 3 && cvv.All(char.IsDigit))
+                break;
+            Console.WriteLine("Geçersiz CVV! Lütfen 3 haneli rakam girin.");
+        }
+    }
+
+    public void Ode(decimal tutar)
+    {
+        Console.WriteLine($"{Ad} ile {tutar:C} ödendi. Teşekkürler {isim}.");
+    }
+}
+
+class Nakit : IOdeme
+{
+    public string Ad => "Nakit (Kapıda)";
+    string adres = "";
+
+    public void BilgiAl()
+    {
+        Console.Write("Adres: "); adres = Console.ReadLine() ?? "";
+    }
+
+    public void Ode(decimal tutar)
+    {
+        Console.WriteLine($"{Ad} ödeme seçildi. {adres} adresine teslim edilecektir.");
+    }
+}
+
+class Havale : IOdeme
+{
+    public string Ad => "Havale / EFT";
+
+    public void BilgiAl()
+    {
+        Console.WriteLine("IBAN: TR00 0000 0000 0000 0000 0000 00");
+    }
+
+    public void Ode(decimal tutar)
+    {
+        Console.WriteLine($"{tutar:C} tutarındaki havale bekleniyor.");
+    }
+}
+
+class Program
+{
+    static void Main()
+    {
+        Console.OutputEncoding = System.Text.Encoding.UTF8;
+
+        var odemeSecenekleri = new Dictionary<string, IOdeme>
+        {
+            { "1", new KrediKarti() },
+            { "2", new Nakit() },
+            { "3", new Havale() }
+        };
+
+        Console.Write("Tutar: ");
+        if (!decimal.TryParse(Console.ReadLine(), out decimal tutar))
+        {
+            Console.WriteLine("Geçersiz tutar!"); return;
+        }
+
+        Console.WriteLine("Ödeme Seçenekleri:");
+        foreach (var kvp in odemeSecenekleri)
+            Console.WriteLine($"{kvp.Key}) {kvp.Value.Ad}");
+
+        Console.Write("Seçiminiz: ");
+        string secim = Console.ReadLine() ?? "";
+
+        if (!odemeSecenekleri.TryGetValue(secim, out IOdeme odeme))
+        {
+            Console.WriteLine("Geçersiz seçim!"); return;
+        }
+
+        odeme.BilgiAl();
+        odeme.Ode(tutar);
+    }
+}

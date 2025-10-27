@@ -1,0 +1,319 @@
+// Gerekli kütüphaneler
+using System;
+using System.Threading;
+using System.Collections.Generic; // List<T> için
+using System.Linq;                // .ToList() için
+
+namespace BildirimSistemiApp
+{
+    // -----------------------------------------------------------------
+    // 1. ADIM: BİLDİRİM ARAYÜZÜ (INTERFACE) - DEĞİŞMEDİ
+    // -----------------------------------------------------------------
+    public interface IBildirilebilir
+    {
+        string Ad { get; }
+        string BildirimTonu { get; set; }
+        int BildirimSesiSeviyesi { get; set; }
+        bool BildirimlerAcik { get; set; }
+        void AyarlariGoster();
+        void BildirimGonder(string mesaj);
+    }
+
+    // -----------------------------------------------------------------
+    // 2. ADIM: SOMUT SINIF - DEĞİŞMEDİ
+    // -----------------------------------------------------------------
+    public class Uygulama : IBildirilebilir
+    {
+        public string Ad { get; private set; }
+        public string BildirimTonu { get; set; }
+        public int BildirimSesiSeviyesi { get; set; }
+        public bool BildirimlerAcik { get; set; }
+
+        public Uygulama(string ad, string varsayilanTon)
+        {
+            Ad = ad;
+            BildirimTonu = varsayilanTon;
+            BildirimSesiSeviyesi = 80;
+            BildirimlerAcik = true;
+        }
+
+        public void AyarlariGoster()
+        {
+            string durum = BildirimlerAcik ? "AÇIK" : "KAPALI";
+            ConsoleColor durumRengi = BildirimlerAcik ? ConsoleColor.Green : ConsoleColor.Red;
+
+            Console.Write($"  > {Ad.PadRight(10)} | Durum: ");
+            Program.PrintColor(durum.PadRight(8), durumRengi);
+            Console.Write($"| Ton: {BildirimTonu.PadRight(12)} | Ses: {BildirimSesiSeviyesi}%\n");
+        }
+
+        public void BildirimGonder(string mesaj)
+        {
+            if (BildirimlerAcik)
+            {
+                Program.PrintSuccess($"\n🔔 [{Ad}] YENİ BİLDİRİM: '{mesaj}'");
+                Console.WriteLine($"   (Ses: {BildirimSesiSeviyesi}%, Ton: {BildirimTonu})");
+            }
+            else
+            {
+                Program.PrintWarning($"\n🔇 [{Ad}] Sessize Alındı: '{mesaj}'");
+            }
+        }
+    }
+
+    // -----------------------------------------------------------------
+    // 3. ADIM: PROGRAM AKIŞI (ANA METOT)
+    // -----------------------------------------------------------------
+    public class Program
+    {
+        private static Random random = new Random();
+
+        // --- YENİ: Sabit Bildirim Tonu Listesi ---
+        private static List<string> mevcutTonlar = new List<string>
+        {
+            "Tri-tone",
+            "Swoosh",
+            "Chime",
+            "Pop-up",
+            "Knock",
+            "Tweet",
+            "Discord",
+            "Zil Sesi (Varsayılan)"
+        };
+
+        public static void Main(string[] args)
+        {
+            PrintTitle("Bildirim Yöneticisi Başlatılıyor...");
+            List<IBildirilebilir> acikUygulamalar = new List<IBildirilebilir>();
+            var uygulamaHavuzu = new Dictionary<string, string>
+            {
+                { "Instagram", "Pop-up" },
+                { "WhatsApp", "Tri-tone" },
+                { "Gmail", "Swoosh" },
+                { "Twitter", "Tweet" },
+                { "Discord", "Discord" },
+                { "Slack", "Knock" },
+                { "YouTube", "Chime" }
+            };
+
+            // Havuzdan 4 tane benzersiz uygulama seç
+            List<string> havuzAnahtarlari = uygulamaHavuzu.Keys.ToList();
+            for (int i = 0; i < 4; i++)
+            {
+                if (havuzAnahtarlari.Count == 0) break;
+                int rastgeleIndex = random.Next(0, havuzAnahtarlari.Count);
+                string secilenAd = havuzAnahtarlari[rastgeleIndex];
+                // Seçilen tonun, bizim listemizde olduğundan emin olalım
+                string varsayilanTon = uygulamaHavuzu[secilenAd];
+                if (!mevcutTonlar.Contains(varsayilanTon))
+                {
+                    varsayilanTon = mevcutTonlar[0]; // Listede yoksa ilkini ata
+                }
+
+                acikUygulamalar.Add(new Uygulama(secilenAd, varsayilanTon));
+                havuzAnahtarlari.RemoveAt(rastgeleIndex);
+            }
+
+            PrintSuccess("4 rastgele uygulama için bildirim ayarları yüklendi.\n");
+            Thread.Sleep(1000);
+
+            // --- 2. ANA YÖNETİM DÖNGÜSÜ ---
+            while (true)
+            {
+                Console.Clear();
+
+                // --- GÜNCELLENDİ: Ana uygulama listesi artık kendi metodunda ---
+                AnaListeyiGoster(acikUygulamalar);
+
+                // Ana Menü
+                PrintTitle("ANA MENÜ");
+                Console.WriteLine("Düzenlemek istediğiniz uygulamayı seçin (1-4):");
+                Console.WriteLine("5: Rastgele bir test bildirimi gönder");
+                Console.WriteLine("6: Çıkış");
+                Console.Write("Seçiminiz: ");
+
+                string secim = Console.ReadLine();
+
+                switch (secim)
+                {
+                    case "1":
+                        // --- GÜNCELLENDİ: Artık 'acikUygulamalar' listesini de gönderiyoruz ---
+                        UygulamayiDuzenle(acikUygulamalar[0], acikUygulamalar);
+                        break;
+                    case "2":
+                        UygulamayiDuzenle(acikUygulamalar[1], acikUygulamalar);
+                        break;
+                    case "3":
+                        UygulamayiDuzenle(acikUygulamalar[2], acikUygulamalar);
+                        break;
+                    case "4":
+                        UygulamayiDuzenle(acikUygulamalar[3], acikUygulamalar);
+                        break;
+                    case "5":
+                        int testIndex = random.Next(0, acikUygulamalar.Count);
+                        acikUygulamalar[testIndex].BildirimGonder("Bu bir test bildirimidir!");
+                        Console.WriteLine("\nDevam etmek için bir tuşa basın...");
+                        Console.ReadKey();
+                        break;
+                    case "6":
+                        PrintWarning("Programdan çıkılıyor...");
+                        return; // Main metodu sonlandır
+                    default:
+                        PrintError("Geçersiz seçim. Lütfen 1-6 arası bir sayı girin.");
+                        Thread.Sleep(1000);
+                        break;
+                }
+            }
+        }
+
+        // --- YENİ METOT: Ana Uygulama Listesini Yazdıran Yardımcı Metot ---
+        /// <summary>
+        /// 4 ana uygulamanın listesini ekranın üstüne çizer.
+        /// </summary>
+        public static void AnaListeyiGoster(List<IBildirilebilir> acikUygulamalar)
+        {
+            PrintTitle("BİLDİRİM YÖNETİCİSİ - UYGULAMALARINIZ");
+            Console.WriteLine("Aşağıdaki uygulamaların mevcut ayarları:\n");
+
+            for (int i = 0; i < acikUygulamalar.Count; i++)
+            {
+                Console.Write($"{i + 1}.");
+                acikUygulamalar[i].AyarlariGoster();
+            }
+            // 46 karakterlik bir ayırıcı
+            Console.WriteLine("\n" + new string('=', 46));
+        }
+
+
+        // --- GÜNCELLENDİ: Uygulama Düzenleme Metodu ---
+        /// <summary>
+        /// Bir uygulamanın ayarlarını değiştirmek için alt menüyü açan metot.
+        /// </summary>
+        /// <param name="uygulama">Ayarları değiştirilecek olan 'IBildirilebilir' nesnesi</param>
+        /// <param name="tumUygulamalar">Üst menüyü tekrar çizebilmek için 4 uygulamanın tam listesi</param>
+        public static void UygulamayiDuzenle(IBildirilebilir uygulama, List<IBildirilebilir> tumUygulamalar)
+        {
+            while (true)
+            {
+                Console.Clear();
+
+                // --- YENİ: EN ÜSTE ANA LİSTEYİ ÇİZ ---
+                AnaListeyiGoster(tumUygulamalar);
+
+                // --- ALT MENÜ ---
+                PrintTitle($"[{uygulama.Ad}] AYARLARI DÜZENLE");
+                Console.WriteLine("Mevcut Ayar:");
+                Console.Write("   -> "); // Seçili olduğunu belirtmek için girinti
+                uygulama.AyarlariGoster(); // Sadece mevcut uygulamanın ayarını tekrar göster
+
+                Console.WriteLine("\nNe yapmak istiyorsunuz?");
+                Console.WriteLine("1: Bildirim Tonunu Değiştir");
+                Console.WriteLine("2: Bildirim Ses Seviyesini Değiştir");
+                Console.WriteLine("3: Bildirimleri Aç / Kapat");
+                Console.WriteLine("4: Ana Menüye Geri Dön");
+                Console.Write("Seçiminiz: ");
+
+                string secim = Console.ReadLine();
+                switch (secim)
+                {
+                    // --- GÜNCELLENDİ: BİLDİRİM TONU SEÇİMİ ---
+                    case "1":
+                        PrintWarning("\n--- Ton Değiştir ---");
+                        Console.WriteLine("Lütfen listeden bir ton seçin:");
+
+                        // Sabit 'mevcutTonlar' listesini yazdır
+                        for (int i = 0; i < mevcutTonlar.Count; i++)
+                        {
+                            Console.WriteLine($"  {i + 1}: {mevcutTonlar[i]}");
+                        }
+
+                        // Kullanıcıdan ton seçimi için doğrulama döngüsü
+                        while (true)
+                        {
+                            Console.Write($"\nSeçiminiz (1-{mevcutTonlar.Count}): ");
+                            if (int.TryParse(Console.ReadLine(), out int tonSecimi) && tonSecimi >= 1 && tonSecimi <= mevcutTonlar.Count)
+                            {
+                                // Seçimi ata (Index 0'dan başladığı için -1)
+                                uygulama.BildirimTonu = mevcutTonlar[tonSecimi - 1];
+                                PrintSuccess("Bildirim tonu güncellendi!");
+                                Thread.Sleep(750);
+                                break; // Doğrulama döngüsünden çık
+                            }
+                            else
+                            {
+                                PrintError("Geçersiz seçim.");
+                            }
+                        }
+                        break; // 'case "1"' den çık
+
+                    case "2":
+                        PrintWarning("\n--- Ses Seviyesi Değiştir ---");
+                        while (true)
+                        {
+                            Console.Write("Yeni ses seviyesi girin (0-100 arası): ");
+                            if (int.TryParse(Console.ReadLine(), out int yeniSes) && yeniSes >= 0 && yeniSes <= 100)
+                            {
+                                uygulama.BildirimSesiSeviyesi = yeniSes;
+                                PrintSuccess("Ses seviyesi güncellendi!");
+                                Thread.Sleep(750);
+                                break;
+                            }
+                            else
+                            {
+                                PrintError("Geçersiz giriş. Lütfen 0 ile 100 arasında bir sayı girin.");
+                            }
+                        }
+                        break;
+
+                    case "3":
+                        uygulama.BildirimlerAcik = !uygulama.BildirimlerAcik;
+                        string durumMesaji = uygulama.BildirimlerAcik ? "Bildirimler AÇILDI" : "Bildirimler KAPATILDI";
+                        PrintSuccess(durumMesaji);
+                        Thread.Sleep(750);
+                        break;
+
+                    case "4":
+                        return; // Bu metottan çık, ana döngüye geri dön
+
+                    default:
+                        PrintError("Geçersiz seçim. Lütfen 1-4 arası bir sayı girin.");
+                        Thread.Sleep(1000);
+                        break;
+                }
+            }
+        }
+
+
+        // --- Renkli Yazdırma için Yardımcı Metotlar (DEĞİŞMEDİ) ---
+        public static void PrintError(string message)
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine(message);
+            Console.ResetColor();
+        }
+        public static void PrintSuccess(string message)
+        {
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine(message);
+            Console.ResetColor();
+        }
+        public static void PrintTitle(string message)
+        {
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine(message);
+            Console.ResetColor();
+        }
+        public static void PrintWarning(string message)
+        {
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.WriteLine(message);
+            Console.ResetColor();
+        }
+        public static void PrintColor(string message, ConsoleColor color)
+        {
+            Console.ForegroundColor = color;
+            Console.Write(message);
+            Console.ResetColor();
+        }
+    }
+}
